@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="nao_dashboard" type="nao_dashboard" name="nao_dashboard"/>
+  <node pkg="diagnostic_aggregator" type="aggregator_node" name="nao_dashboard_aggregator" clear_params="true">
+    <rosparam command="load" file="$(find nao_dashboard)/config/nao_dashboard_aggregator.yaml" />
+  </node>
+</launch>
+

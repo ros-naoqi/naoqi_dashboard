@@ -1,0 +1,17 @@
+<stack>
+  <description brief="nao_viz contains visualization for the Nao (nao_dashboard)">Visualization for the Nao humanoid - currently only nao_dashboard</description>
+  <author>Maintained by Armin Hornung</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/nao_viz</url>
+  <depend stack="common" /> <!-- actionlib -->
+  <depend stack="common_msgs" /> <!-- diagnostic_msgs -->
+  <depend stack="diagnostics" /> <!-- diagnostic_aggregator -->
+  <depend stack="diagnostics_monitors" /> <!-- robot_monitor -->
+  <depend stack="nao_robot" /> <!-- nao_msgs -->
+  <depend stack="pluginlib" /> <!-- pluginlib -->
+  <depend stack="ros" /> <!-- roslib -->
+  <depend stack="ros_comm" /> <!-- std_msgs, std_srvs, rospy, roscpp -->
+  <depend stack="rx" /> <!-- rxtools -->
+
+</stack>
