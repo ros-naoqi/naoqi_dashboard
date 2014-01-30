@@ -35,14 +35,6 @@
 #
 
 import roslib
-roslib.load_manifest('nao_dashboard')
-
-import wx
-import wx.aui
-import wx.py.shell
-import rxtools
-import rxtools.cppwidgets as rxtools
-
 import dbus, gobject, dbus.glib
 from diagnostic_msgs.msg import *
 
@@ -50,9 +42,10 @@ from nao_msgs.msg import BodyPoseAction, BodyPoseGoal
 import actionlib
 import std_srvs.srv
 
-ID_INIT_POSE = wx.NewId()
-ID_SIT_DOWN = wx.NewId()
-ID_REMOVE_STIFFNESS = wx.NewId()
+#TODO
+#ID_INIT_POSE = wx.NewId()
+#ID_SIT_DOWN = wx.NewId()
+#ID_REMOVE_STIFFNESS = wx.NewId()
 
 #import avahi
 class avahi:
@@ -77,50 +70,28 @@ class avahi:
     LOOKUP_RESULT_STATIC = 32
 
 
-import robot_monitor
-from robot_monitor.robot_monitor_panel import RobotMonitorPanel
 import std_msgs.msg
 import std_srvs.srv
 
 import rospy
 from roslib import rosenv
 
-from os import path
-import threading
+from .status_control import StatusControl
+from .power_state_control import PowerStateControl
 
-from status_control import StatusControl
-from power_state_control import PowerStateControl
-from diagnostics_frame import DiagnosticsFrame
-from rosout_frame import RosoutFrame
+from rqt_robot_dashboard.dashboard import Dashboard
+from rqt_robot_dashboard.monitor_dash_widget import MonitorDashWidget
+from rqt_robot_dashboard.console_dash_widget import ConsoleDashWidget
 
-class NaoFrame(wx.Frame):
+class NAODashboard(Dashboard):
     _CONFIG_WINDOW_X="/Window/X"
     _CONFIG_WINDOW_Y="/Window/Y"
     
-    def __init__(self, parent, id=wx.ID_ANY, title='Nao Dashboard', pos=wx.DefaultPosition, size=(400, 50), style=wx.CAPTION|wx.CLOSE_BOX|wx.STAY_ON_TOP):
-        wx.Frame.__init__(self, parent, id, title, pos, size, style)
-        
-        wx.InitAllImageHandlers()
-        
-        rospy.init_node('nao_dashboard', anonymous=True)
-        try:
-            getattr(rxtools, "initRoscpp")
-            rxtools.initRoscpp("nao_dashboard_cpp", anonymous=True)
-        except AttributeError:
-            pass
-        
-        self.SetTitle('Nao Dashboard (%s)'%rosenv.get_master_uri())
-        
-        icons_path = path.join(roslib.packages.get_pkg_dir('nao_dashboard'), "icons/")
-        
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.SetSizer(sizer)
-        
-        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "Robot"), wx.HORIZONTAL)
-        sizer.Add(static_sizer, 0)
-        self._robot_combobox = wx.ComboBox(self, wx.ID_ANY, "", choices = [])
-        static_sizer.Add(self._robot_combobox, 0)
-        
+    def setup(self, context):
+        self.name = 'NAO Dashboard (%s)'%rosenv.get_master_uri()
+
+        #self._robot_combobox = wx.ComboBox(self, wx.ID_ANY, "", choices = [])
+
         gobject.threads_init()
         dbus.glib.threads_init() 
         self.robots = []
@@ -133,31 +104,19 @@ class NaoFrame(wx.Frame):
         self.sbrowser.connect_to_signal("ItemNew", self.avahiNewItem)
         self.sbrowser.connect_to_signal("ItemRemove", self.avahiItemRemove)
 
-        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "Diagnostic"), wx.HORIZONTAL)
-        sizer.Add(static_sizer, 0)
-        
         # Diagnostics
-        self._diagnostics_button = StatusControl(self, wx.ID_ANY, icons_path, "diag", True)
-        self._diagnostics_button.SetToolTip(wx.ToolTip("Diagnostics"))
-        static_sizer.Add(self._diagnostics_button, 0)
-        
+        self._monitor = MonitorDashWidget(self.context)
+
         # Rosout
-        self._rosout_button = StatusControl(self, wx.ID_ANY, icons_path, "rosout", True)
-        self._rosout_button.SetToolTip(wx.ToolTip("Rosout"))
-        static_sizer.Add(self._rosout_button, 0)
-        
+        self._console = ConsoleDashWidget(self.context, minimal=False)
+
         # Joint temperature
         self._temp_joint_button = StatusControl(self, wx.ID_ANY, icons_path, "temperature_joints", True)
         self._temp_joint_button.SetToolTip(wx.ToolTip("Joint temperatures"))
-        static_sizer.Add(self._temp_joint_button, 0)
 
         # CPU temperature
         self._temp_head_button = StatusControl(self, wx.ID_ANY, icons_path, "temperature_head", True)
         self._temp_head_button.SetToolTip(wx.ToolTip("CPU temperature"))
-        static_sizer.Add(self._temp_head_button, 0)
-
-        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "Stiffness"), wx.HORIZONTAL)
-        sizer.Add(static_sizer, 0)
 
         # Motors
         self._motors_button = StatusControl(self, wx.ID_ANY, icons_path, "motor", True)
@@ -170,84 +129,30 @@ class NaoFrame(wx.Frame):
                      wx.Bitmap(path.join(icons_path, "stiffness-on-toggled.png"), wx.BITMAP_TYPE_PNG))
         self._motors_button._stale = (wx.Bitmap(path.join(icons_path, "stiffness-stale-untoggled.png"), wx.BITMAP_TYPE_PNG), 
                     wx.Bitmap(path.join(icons_path, "stiffness-stale-toggled.png"), wx.BITMAP_TYPE_PNG))
-        static_sizer.Add(self._motors_button, 0)
         self._motors_button.Bind(wx.EVT_LEFT_DOWN, self.on_motors_clicked)
-                
-        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "Battery"), wx.HORIZONTAL)
-        sizer.Add(static_sizer, 0)
-        
+
         # Battery State
         self._power_state_ctrl = PowerStateControl(self, wx.ID_ANY, icons_path)
         self._power_state_ctrl.SetToolTip(wx.ToolTip("Battery: Stale"))
-        static_sizer.Add(self._power_state_ctrl, 1, wx.EXPAND)
         
         self._config = wx.Config("nao_dashboard")
-        
-        self.Bind(wx.EVT_CLOSE, self.on_close)
         
         self.Layout()
         self.Fit()
         
-        self._diagnostics_frame = DiagnosticsFrame(self, wx.ID_ANY, "Diagnostics")
-        self._diagnostics_frame.Hide()
-        self._diagnostics_frame.Center()
-        self._diagnostics_button.Bind(wx.EVT_BUTTON, self.on_diagnostics_clicked)
-        
-        self._rosout_frame = RosoutFrame(self, wx.ID_ANY, "Rosout")
-        self._rosout_frame.Hide()
-        self._rosout_frame.Center()
-        self._rosout_button.Bind(wx.EVT_BUTTON, self.on_rosout_clicked)
-        
         self.load_config()
-        
-        self._timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.on_timer)
-        self._timer.Start(500)
     
         self._agg_sub = rospy.Subscriber('diagnostics_agg', DiagnosticArray, self.diagnostic_callback)
-        self._last_diagnostics_message_time = 0.0
         self.bodyPoseClient = actionlib.SimpleActionClient('body_pose', BodyPoseAction)
         self.stiffnessEnableClient = rospy.ServiceProxy("body_stiffness/enable", std_srvs.srv.Empty)
         self.stiffnessDisableClient = rospy.ServiceProxy("body_stiffness/disable", std_srvs.srv.Empty)
-        
-        
-    def __del__(self):
+
+    def get_widgets(self):
+        return [self._robot_combobox, [self._monitor, self._console, self._temp_joint_button, self._temp_head_button], self._motors_button, self._power_state_ctrl]
+
+    def shutdown_dashboard(self):
         self._dashboard_agg_sub.unregister()
-        
-    def on_timer(self, evt):
-      level = self._diagnostics_frame._diagnostics_panel.get_top_level_state()
-      if (level == -1 or level == 3):
-        if (self._diagnostics_button.set_stale()):
-            self._diagnostics_button.SetToolTip(wx.ToolTip("Diagnostics: Stale"))
-      elif (level >= 2):
-        if (self._diagnostics_button.set_error()):
-            self._diagnostics_button.SetToolTip(wx.ToolTip("Diagnostics: Error"))
-      elif (level == 1):
-        if (self._diagnostics_button.set_warn()):
-            self._diagnostics_button.SetToolTip(wx.ToolTip("Diagnostics: Warning"))
-      else:
-        if (self._diagnostics_button.set_ok()):
-            self._diagnostics_button.SetToolTip(wx.ToolTip("Diagnostics: OK"))
-        
-      self.update_rosout()
-      
-      if (rospy.get_time() - self._last_diagnostics_message_time > 5.0):
-          ctrls = [self._motors_button, self._power_state_ctrl, self._temp_head_button, self._temp_joint_button]
-          for ctrl in ctrls:
-              ctrl.set_stale()
-              ctrl.SetToolTip(wx.ToolTip("No message received on diagnostics_agg in the last 5 seconds"))
-        
-      if (rospy.is_shutdown()):
-        self.Close()
-        
-    def on_diagnostics_clicked(self, evt):
-      self._diagnostics_frame.Show()
-      self._diagnostics_frame.Raise()
-      
-    def on_rosout_clicked(self, evt):
-      self._rosout_frame.Show()
-      self._rosout_frame.Raise()
-      
+
     def on_motors_clicked(self, evt):      
       menu = wx.Menu()
       menu.Append(ID_INIT_POSE, "Init pose")
@@ -296,7 +201,6 @@ class NaoFrame(wx.Frame):
       wx.CallAfter(self.new_diagnostic_message, msg)
       
     def new_diagnostic_message(self, msg):
-        self._last_diagnostics_message_time = rospy.get_time()
         for status in msg.status:
             if status.name == '/Nao/Joints':
                 highestTemp = ""
@@ -348,72 +252,7 @@ class NaoFrame(wx.Frame):
             button.set_stale()
             statusString = "Stale"
         button.SetToolTip(wx.ToolTip(statusPrefix + statusString + statusSuffix))
-               
-    def update_rosout(self):
-      summary_dur = 30.0
-      if (rospy.get_time() < 30.0):
-          summary_dur = rospy.get_time() - 1.0
-          
-      if (summary_dur < 0):
-          summary_dur = 0.0
-    
-      summary = self._rosout_frame.get_panel().getMessageSummary(summary_dur)
-      
-      if (summary.fatal or summary.error):
-        self._rosout_button.set_error()
-      elif (summary.warn):
-        self._rosout_button.set_warn()
-      else:
-        self._rosout_button.set_ok()
-        
-        
-      tooltip = ""
-      if (summary.fatal):
-        tooltip += "\nFatal: %s"%(summary.fatal)
-      if (summary.error):
-        tooltip += "\nError: %s"%(summary.error)
-      if (summary.warn):
-        tooltip += "\nWarn: %s"%(summary.warn)
-      if (summary.info):
-        tooltip += "\nInfo: %s"%(summary.info)
-      if (summary.debug):
-        tooltip += "\nDebug: %s"%(summary.debug)
-      
-      if (len(tooltip) == 0):
-        tooltip = "Rosout: no recent activity"
-      else:
-        tooltip = "Rosout: recent activity:" + tooltip
-    
-      if (tooltip != self._rosout_button.GetToolTip().GetTip()):
-          self._rosout_button.SetToolTip(wx.ToolTip(tooltip))
-        
-    def load_config(self):
-      # Load our window options
-      (x, y) = self.GetPositionTuple()
-      (width, height) = self.GetSizeTuple()
-      if (self._config.HasEntry(self._CONFIG_WINDOW_X)):
-          x = self._config.ReadInt(self._CONFIG_WINDOW_X)
-      if (self._config.HasEntry(self._CONFIG_WINDOW_Y)):
-          y = self._config.ReadInt(self._CONFIG_WINDOW_Y)
-      
-      self.SetPosition((x, y))
-      self.SetSize((width, height))
-        
-    def save_config(self):
-      config = self._config
-      
-      (x, y) = self.GetPositionTuple()
-      (width, height) = self.GetSizeTuple()
-      config.WriteInt(self._CONFIG_WINDOW_X, x)
-      config.WriteInt(self._CONFIG_WINDOW_Y, y)
-      
-      config.Flush()
-        
-    def on_close(self, event):
-      self.save_config()
-      
-      self.Destroy()
-      
+
     def avahiNewItem(self, interface, protocol, name, stype, domain, flags):
         self.avahi_server.ResolveService(interface, protocol, name, stype, 
             domain, avahi.PROTO_INET, dbus.UInt32(0), 
@@ -451,5 +290,11 @@ class NaoFrame(wx.Frame):
     def print_error(self, *args):
         print 'error_handler'
         print args
-            
-                
+
+    def save_settings(self, plugin_settings, instance_settings):
+        self._console.save_settings(plugin_settings, instance_settings)
+        self._monitor.save_settings(plugin_settings, instance_settings)
+
+    def restore_settings(self, plugin_settings, instance_settings):
+        self._console.restore_settings(plugin_settings, instance_settings)
+        self._monitor.restore_settings(plugin_settings, instance_settings)

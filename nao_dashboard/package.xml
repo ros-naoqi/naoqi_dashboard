@@ -25,9 +25,11 @@
   <run_depend>diagnostic_msgs</run_depend>
   <run_depend>nao_msgs</run_depend>
   <run_depend>robot_monitor</run_depend>
+  <run_depend>rqt_robot_dashboard</run_depend>
 
   <export> 
     <diagnostic_aggregator plugin="${prefix}/nao_analyzer_plugins.xml" />
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
 
 </package>
