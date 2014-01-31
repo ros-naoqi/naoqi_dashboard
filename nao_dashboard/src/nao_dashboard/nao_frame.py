@@ -36,7 +36,7 @@
 
 import roslib
 import dbus, gobject, dbus.glib
-from diagnostic_msgs.msg import *
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 
 from nao_msgs.msg import BodyPoseAction, BodyPoseGoal
 import actionlib
@@ -70,11 +70,10 @@ class avahi:
     LOOKUP_RESULT_STATIC = 32
 
 
-import std_msgs.msg
 import std_srvs.srv
 
 import rospy
-from roslib import rosenv
+from rosgraph import rosenv
 
 from .status_control import StatusControl
 from .power_state_control import PowerStateControl
@@ -83,17 +82,20 @@ from rqt_robot_dashboard.dashboard import Dashboard
 from rqt_robot_dashboard.monitor_dash_widget import MonitorDashWidget
 from rqt_robot_dashboard.console_dash_widget import ConsoleDashWidget
 
+from python_qt_binding.QtGui import QComboBox
+
 class NAODashboard(Dashboard):
-    _CONFIG_WINDOW_X="/Window/X"
-    _CONFIG_WINDOW_Y="/Window/Y"
     
     def setup(self, context):
         self.name = 'NAO Dashboard (%s)'%rosenv.get_master_uri()
 
-        #self._robot_combobox = wx.ComboBox(self, wx.ID_ANY, "", choices = [])
+        self._robot_combobox = QComboBox()
+        self._robot_combobox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self._robot_combobox.setInsertPolicy(QComboBox.InsertAlphabetically)
+        self._robot_combobox.setEditable(True)
 
         gobject.threads_init()
-        dbus.glib.threads_init() 
+        dbus.glib.threads_init()
         self.robots = []
         self.sys_bus = dbus.SystemBus()
         self.avahi_server = dbus.Interface(self.sys_bus.get_object(avahi.DBUS_NAME, '/'), avahi.DBUS_INTERFACE_SERVER)
@@ -110,48 +112,45 @@ class NAODashboard(Dashboard):
         # Rosout
         self._console = ConsoleDashWidget(self.context, minimal=False)
 
-        # Joint temperature
-        self._temp_joint_button = StatusControl(self, wx.ID_ANY, icons_path, "temperature_joints", True)
-        self._temp_joint_button.SetToolTip(wx.ToolTip("Joint temperatures"))
+        ## Joint temperature
+        #self._temp_joint_button = StatusControl(self, wx.ID_ANY, icons_path, "temperature_joints", True)
+        #self._temp_joint_button.SetToolTip(wx.ToolTip("Joint temperatures"))
 
-        # CPU temperature
-        self._temp_head_button = StatusControl(self, wx.ID_ANY, icons_path, "temperature_head", True)
-        self._temp_head_button.SetToolTip(wx.ToolTip("CPU temperature"))
+        ## CPU temperature
+        #self._temp_head_button = StatusControl(self, wx.ID_ANY, icons_path, "temperature_head", True)
+        #self._temp_head_button.SetToolTip(wx.ToolTip("CPU temperature"))
 
-        # Motors
-        self._motors_button = StatusControl(self, wx.ID_ANY, icons_path, "motor", True)
-        self._motors_button.SetToolTip(wx.ToolTip("Stiffness"))
-        self._motors_button._ok = (wx.Bitmap(path.join(icons_path, "stiffness-off-untoggled.png"), wx.BITMAP_TYPE_PNG), 
-                    wx.Bitmap(path.join(icons_path, "stiffness-off-toggled.png"), wx.BITMAP_TYPE_PNG))
-        self._motors_button._warn = (wx.Bitmap(path.join(icons_path, "stiffness-partially-untoggled.png"), wx.BITMAP_TYPE_PNG), 
-                    wx.Bitmap(path.join(icons_path, "stiffness-partially-toggled.png"), wx.BITMAP_TYPE_PNG))
-        self._motors_button._error = (wx.Bitmap(path.join(icons_path, "stiffness-on-untoggled.png"), wx.BITMAP_TYPE_PNG), 
-                     wx.Bitmap(path.join(icons_path, "stiffness-on-toggled.png"), wx.BITMAP_TYPE_PNG))
-        self._motors_button._stale = (wx.Bitmap(path.join(icons_path, "stiffness-stale-untoggled.png"), wx.BITMAP_TYPE_PNG), 
-                    wx.Bitmap(path.join(icons_path, "stiffness-stale-toggled.png"), wx.BITMAP_TYPE_PNG))
-        self._motors_button.Bind(wx.EVT_LEFT_DOWN, self.on_motors_clicked)
+        ## Motors
+        #self._motors_button = StatusControl(self, wx.ID_ANY, icons_path, "motor", True)
+        #self._motors_button.SetToolTip(wx.ToolTip("Stiffness"))
+        #self._motors_button._ok = (wx.Bitmap(path.join(icons_path, "stiffness-off-untoggled.png"), wx.BITMAP_TYPE_PNG), 
+                    #wx.Bitmap(path.join(icons_path, "stiffness-off-toggled.png"), wx.BITMAP_TYPE_PNG))
+        #self._motors_button._warn = (wx.Bitmap(path.join(icons_path, "stiffness-partially-untoggled.png"), wx.BITMAP_TYPE_PNG), 
+                    #wx.Bitmap(path.join(icons_path, "stiffness-partially-toggled.png"), wx.BITMAP_TYPE_PNG))
+        #self._motors_button._error = (wx.Bitmap(path.join(icons_path, "stiffness-on-untoggled.png"), wx.BITMAP_TYPE_PNG), 
+                     #wx.Bitmap(path.join(icons_path, "stiffness-on-toggled.png"), wx.BITMAP_TYPE_PNG))
+        #self._motors_button._stale = (wx.Bitmap(path.join(icons_path, "stiffness-stale-untoggled.png"), wx.BITMAP_TYPE_PNG), 
+                    #wx.Bitmap(path.join(icons_path, "stiffness-stale-toggled.png"), wx.BITMAP_TYPE_PNG))
+        #self._motors_button.Bind(wx.EVT_LEFT_DOWN, self.on_motors_clicked)
 
-        # Battery State
-        self._power_state_ctrl = PowerStateControl(self, wx.ID_ANY, icons_path)
-        self._power_state_ctrl.SetToolTip(wx.ToolTip("Battery: Stale"))
-        
-        self._config = wx.Config("nao_dashboard")
-        
-        self.Layout()
-        self.Fit()
-        
-        self.load_config()
-    
-        self._agg_sub = rospy.Subscriber('diagnostics_agg', DiagnosticArray, self.diagnostic_callback)
+        ## Battery State
+        #self._power_state_ctrl = PowerStateControl(self, wx.ID_ANY, icons_path)
+        #self._power_state_ctrl.SetToolTip(wx.ToolTip("Battery: Stale"))
+
+        self._agg_sub = rospy.Subscriber('diagnostics_agg', DiagnosticArray, self.new_diagnostic_message)
         self.bodyPoseClient = actionlib.SimpleActionClient('body_pose', BodyPoseAction)
         self.stiffnessEnableClient = rospy.ServiceProxy("body_stiffness/enable", std_srvs.srv.Empty)
         self.stiffnessDisableClient = rospy.ServiceProxy("body_stiffness/disable", std_srvs.srv.Empty)
 
     def get_widgets(self):
-        return [self._robot_combobox, [self._monitor, self._console, self._temp_joint_button, self._temp_head_button], self._motors_button, self._power_state_ctrl]
+        return [ [self._robot_combobox], 
+                [self._monitor, self._console, #self._temp_joint_button, self._temp_head_button
+                 ], #self._motors_button,
+                #self._power_state_ctrl
+                ]
 
     def shutdown_dashboard(self):
-        self._dashboard_agg_sub.unregister()
+        self._agg_sub.unregister()
 
     def on_motors_clicked(self, evt):      
       menu = wx.Menu()
@@ -197,10 +196,14 @@ class NAODashboard(Dashboard):
       except rospy.ServiceException, e:
         wx.MessageBox("Failed to halt the motors: service call failed with error: %s"%(e), "Error", wx.OK|wx.ICON_ERROR)
       
-    def diagnostic_callback(self, msg):
-      wx.CallAfter(self.new_diagnostic_message, msg)
-      
     def new_diagnostic_message(self, msg):
+        """
+        callback to process dashboard_agg messages
+
+        :param msg: dashboard_agg DashboardState message
+        :type msg: pr2_msgs.msg.DashboardState
+        """
+        self._dashboard_message = msg
         for status in msg.status:
             if status.name == '/Nao/Joints':
                 highestTemp = ""
@@ -216,27 +219,27 @@ class NAODashboard(Dashboard):
                          lowestStiff = float(kv.value)
                      elif kv.key == 'Hot Joints':
                          hotJoints = str(kv.value)
-                self.set_buttonStatus(self._temp_joint_button, status, "Joints: ", "%s %s"%(highestTemp, hotJoints))
-                if(lowestStiff < 0.0 or highestStiff < 0.0):
-                    self._motors_button.set_stale()
-                    self._motors_button.SetToolTip(wx.ToolTip("Stale"))
-                elif(lowestStiff > 0.9):
-                    self._motors_button.set_error()
-                    self._motors_button.SetToolTip(wx.ToolTip("Stiffness on"))
-                elif(highestStiff < 0.05):
-                    self._motors_button.set_ok()
-                    self._motors_button.SetToolTip(wx.ToolTip("Stiffness off"))
-                else:
-                    self._motors_button.set_warn()
-                    self._motors_button.SetToolTip(wx.ToolTip("Stiffness partially on (between %f and %f)" % (lowestStiff, highestStiff)))
-            elif status.name == '/Nao/CPU':
-                self.set_buttonStatus(self._temp_head_button, status, "CPU temperature: ")
+                #self.set_buttonStatus(self._temp_joint_button, status, "Joints: ", "%s %s"%(highestTemp, hotJoints))
+                #if(lowestStiff < 0.0 or highestStiff < 0.0):
+                    #self._motors_button.set_stale()
+                    #self._motors_button.SetToolTip(wx.ToolTip("Stale"))
+                #elif(lowestStiff > 0.9):
+                    #self._motors_button.set_error()
+                    #self._motors_button.SetToolTip(wx.ToolTip("Stiffness on"))
+                #elif(highestStiff < 0.05):
+                    #self._motors_button.set_ok()
+                    #self._motors_button.SetToolTip(wx.ToolTip("Stiffness off"))
+                #else:
+                    #self._motors_button.set_warn()
+                    #self._motors_button.SetToolTip(wx.ToolTip("Stiffness partially on (between %f and %f)" % (lowestStiff, highestStiff)))
+            #elif status.name == '/Nao/CPU':
+                #self.set_buttonStatus(self._temp_head_button, status, "CPU temperature: ")
             elif status.name == '/Nao/Battery/Battery':
                 if status.level == 3:
                     self._power_state_ctrl.set_stale()
                 else:
-                    self._power_state_ctrl.set_power_state(status.values)
-                    
+                    self._power_state_ctrl.update_perc(status.values.get("Percentage", 0))
+
     def set_buttonStatus(self, button, status, statusPrefix = "", statusSuffix = ""):
         statusString = "Unknown"
         if status.level == DiagnosticStatus.OK:
@@ -271,20 +274,21 @@ class NAODashboard(Dashboard):
         self.updateRobotCombobox()
         
     def updateRobotCombobox(self):
-        selected = self._robot_combobox.GetValue()
-        self._robot_combobox.Clear()
+        selected = self._robot_combobox.currentText()
+        for i in range(self._robot_combobox.count()):
+            self._robot_combobox.removeItem(i)
         id = -1
         for robot in self.robots:
             text = str(robot)
             text = "%s (%s:%d)" % (robot['name'], robot['address'], robot['port'])
-            self._robot_combobox.Append(text)
+            self._robot_combobox.addItem(text, '%s:%d' % (robot['address'], robot['port']))
             if(text == selected):
-                id = self._robot_combobox.GetCount()-1;
+                id = self._robot_combobox.count()-1;
             
-        if(self._robot_combobox.GetCount() == 1):
-            self._robot_combobox.SetSelection(0)
+        if(self._robot_combobox.count() == 1):
+            self._robot_combobox.setCurrentIndex(0)
         elif(id > -1):
-            self._robot_combobox.SetSelection(id)
+            self._robot_combobox.setCurrentIndex(id)
 
         
     def print_error(self, *args):
