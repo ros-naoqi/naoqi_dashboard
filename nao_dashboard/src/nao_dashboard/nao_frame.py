@@ -88,8 +88,8 @@ class NAODashboard(Dashboard):
         #self._motors_button.Bind(wx.EVT_LEFT_DOWN, self.on_motors_clicked)
 
         ## Battery State
-        #self._power_state_ctrl = PowerStateControl(self, wx.ID_ANY, icons_path)
-        #self._power_state_ctrl.SetToolTip(wx.ToolTip("Battery: Stale"))
+        self._power_state_ctrl = PowerStateControl('NAO Battery')
+        #PowerStateControl(self.context)
 
         self._agg_sub = rospy.Subscriber('diagnostics_agg', DiagnosticArray, self.new_diagnostic_message)
         self.bodyPoseClient = actionlib.SimpleActionClient('body_pose', BodyPoseAction)
@@ -100,7 +100,7 @@ class NAODashboard(Dashboard):
         return [ [self._robot_combobox], 
                 [self._monitor, self._console, #self._temp_joint_button, self._temp_head_button
                  ], #self._motors_button,
-                #self._power_state_ctrl
+                [self._power_state_ctrl]
                 ]
 
     def shutdown_dashboard(self):
@@ -192,7 +192,7 @@ class NAODashboard(Dashboard):
                 if status.level == 3:
                     self._power_state_ctrl.set_stale()
                 else:
-                    self._power_state_ctrl.update_perc(status.values.get("Percentage", 0))
+                    self._power_state_ctrl.set_power_state(status.values)
 
     def set_buttonStatus(self, button, status, statusPrefix = "", statusSuffix = ""):
         statusString = "Unknown"

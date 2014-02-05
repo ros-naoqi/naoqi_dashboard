@@ -1,6 +1,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2014, Aldebaran Robotics (c)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,65 +35,37 @@
 # Ported from pr2_dashboard: Stefan Osswald, University of Freiburg, 2011.
 #
 
-from os import path
-import rospy
-
-from python_qt_binding.QtCore import QSize
 from rqt_robot_dashboard.widgets import BatteryDashWidget
 
-
 class PowerStateControl(BatteryDashWidget):
-    def __init__(self, icons=None, charge_icons=None, icon_paths=None, suppress_overlays=False):
+    """
+    A Widget that interprets NAO's battery status and displays battery state
+    """
+    def __init__(self, name):
         """
-        :param context: the plugin context
-        :type context: qt_gui.plugin.Plugin
+        :param name: name of the plugin
+        :type name: String
         """
-        super(PowerStateControl, self).__init__('NAO Battery')
-
-        self._power_consumption = 0.0
-        self._pct = 0
+        super(PowerStateControl, self).__init__(name)
 
     def set_power_state(self, msg):
-        last_pct = self._pct
-        last_discharging = self._discharging
-        last_charging = self._charging
-        last_full = self._full
-        last_plugged_in = self._plugged_in
-        
         self.isStale = False
         for kv in msg:
             if kv.key == "Current":
-                self._power_consumption = float(kv.value)
+                self.update_time(float(kv.value))
             elif kv.key == "Percentage":
                 if kv.value == "unknown":
                     isStale = True
                     self.set_stale()
                 else:
-                    self._pct = float(kv.value)/100.
+                    self.update_perc(float(kv.value))
             elif kv.key == "Discharging flag":
-                self._discharging = (kv.value == "True")
+                self.set_charging(False)
             elif kv.key == "Charge Flag":
-                self._charging = (kv.value == "True")
+                self.set_charging(True)
             elif kv.key == "Full Charge Flag":
-                self._full = (kv.value == "True")
-        
-        self._plugged_in = ((self._charging or not self._discharging) and not self.isStale)
-        if (last_pct != self._pct or last_discharging != self._discharging or last_charging != self._charging or last_full != self._full):
-            if(self._full):
-                self.SetToolTip(wx.ToolTip("Battery fully charged"))
-            else:
-                drain_str = "discharging"
-                if (self._charging):
-                    drain_str = "charging"
-                    self.SetToolTip(wx.ToolTip("Battery: %.0f%% (%s)"%(self._pct * 100., drain_str)))
-            self.Refresh()
-        
+                self.setToolTip("Battery fully charged")
+
     def set_stale(self):
-        self._plugged_in = False
-        self._discharging = 0
-        self._pct = 0
-        self._power_consumption = 0
-        self.SetToolTip(wx.ToolTip("Battery: Stale"))
+        self.setToolTip("Battery: Stale")
         self.isStale = True
-        
-        self.Refresh()
