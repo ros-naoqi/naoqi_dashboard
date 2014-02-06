@@ -1,6 +1,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2014, Aldebaran Robotics (c)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,134 +35,16 @@
 # Copied from pr2_dashboard.
 #
 
-import roslib
-roslib.load_manifest('nao_dashboard')
+from rqt_robot_dashboard.icon_tool_button import IconToolButton
 
-import wx
+class StatusControl(IconToolButton):
+    def __init__(self, name, base_name):
+        ok_icon = ['bg-green.svg', '%s.svg' % base_name]
+        warn_icon = ['bg-yellow.svg', '%s.svg' % base_name,
+                     'ol-warn-badge.svg']
+        err_icon = ['bg-red.svg', '%s.svg' % base_name, 'ol-err-badge.svg']
+        stale_icon = ['bg-grey.svg', '%s.svg' % base_name, 'ol-stale-badge.svg']
 
-from os import path
+        icons = [ok_icon, warn_icon, err_icon, stale_icon]
 
-class StatusControl(wx.Window):
-  def __init__(self, parent, id, icons_path, base_name, toggleable):
-    wx.Window.__init__(self, parent, id)
-    self.SetSize(wx.Size(32, 32))
-    
-    if (toggleable):
-      self._ok = (wx.Bitmap(path.join(icons_path, "%s-green-untoggled.png"%(base_name)), wx.BITMAP_TYPE_PNG), 
-                  wx.Bitmap(path.join(icons_path, "%s-green-toggled.png"%(base_name)), wx.BITMAP_TYPE_PNG))
-      self._warn = (wx.Bitmap(path.join(icons_path, "%s-yellow-untoggled.png"%(base_name)), wx.BITMAP_TYPE_PNG), 
-                    wx.Bitmap(path.join(icons_path, "%s-yellow-toggled.png"%(base_name)), wx.BITMAP_TYPE_PNG))
-      self._error = (wx.Bitmap(path.join(icons_path, "%s-red-untoggled.png"%(base_name)), wx.BITMAP_TYPE_PNG), 
-                   wx.Bitmap(path.join(icons_path, "%s-red-toggled.png"%(base_name)), wx.BITMAP_TYPE_PNG))
-      self._stale = (wx.Bitmap(path.join(icons_path, "%s-grey-untoggled.png"%(base_name)), wx.BITMAP_TYPE_PNG), 
-                     wx.Bitmap(path.join(icons_path, "%s-grey-toggled.png"%(base_name)), wx.BITMAP_TYPE_PNG))
-    else:
-      ok = wx.Bitmap(path.join(icons_path, "%s-green.png"%(base_name)), wx.BITMAP_TYPE_PNG)
-      warn = wx.Bitmap(path.join(icons_path, "%s-yellow.png"%(base_name)), wx.BITMAP_TYPE_PNG)
-      error = wx.Bitmap(path.join(icons_path, "%s-red.png"%(base_name)), wx.BITMAP_TYPE_PNG)
-      stale = wx.Bitmap(path.join(icons_path, "%s-grey.png"%(base_name)), wx.BITMAP_TYPE_PNG)
-      self._ok = (ok, ok)
-      self._warn = (warn, warn)
-      self._error = (error, error)
-      self._stale = (stale, stale)
-    
-    self._color = None
-    self.set_stale()
-    
-    self.Bind(wx.EVT_PAINT, self.on_paint)
-    self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
-    self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
-    self.Bind(wx.EVT_LEAVE_WINDOW, self.on_leave_window)
-    self.Bind(wx.EVT_ENTER_WINDOW, self.on_enter_window)
-    
-    self._toggled = False
-    self._left_down = False
-    
-  def toggle(self, tog):
-    if (self._toggled == tog):
-        return False
-    
-    self._toggled = tog
-    self.Refresh()
-    
-    return True
-
-  def on_left_down(self, evt):
-    self.toggle(True)
-    self._left_down = True
-    self.Refresh()
-
-  def on_left_up(self, evt):
-    self.toggle(False)
-    self._left_down = False
-    x = evt.GetX()
-    y = evt.GetY()
-    if (x >= 0 and y >= 0 and x < self.GetSize().GetWidth() and y < self.GetSize().GetHeight()):
-      event = wx.CommandEvent(wx.EVT_BUTTON._getEvtType(), self.GetId())
-      wx.PostEvent(self, event)
-      
-    self.Refresh()
-
-  def on_leave_window(self, evt):
-    self.toggle(False)
-    self.Refresh()
-    
-  def on_enter_window(self, evt):
-    if (self._left_down):
-      self.toggle(True)
-      
-    self.Refresh()
-
-  def on_paint(self, evt):
-    dc = wx.BufferedPaintDC(self)
-    dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
-    dc.Clear()
-    
-    size = self.GetSize();
-    
-    bitmap = None
-    if (self._toggled):
-      bitmap = self._color[1]
-    else:
-      bitmap = self._color[0]
-    
-    dc.DrawBitmap(bitmap, (size.GetWidth() - bitmap.GetWidth()) / 2.0, (size.GetHeight() - bitmap.GetHeight()) / 2.0, True)
-
-  def set_ok(self):
-    if (self._color == self._ok):
-        return False
-    
-    self._color = self._ok
-    self.update()
-    
-    return True
-    
-  def set_warn(self):
-    if (self._color == self._warn):
-        return False
-      
-    self._color = self._warn
-    self.update()
-    
-    return True
-    
-  def set_error(self):
-    if (self._color == self._error):
-        return False
-      
-    self._color = self._error
-    self.update()
-    
-    return True
-    
-  def set_stale(self):
-    if (self._color == self._stale):
-        return False
-      
-    self._color = self._stale
-    self.update()
-    
-    return True
-    
-  def update(self):
-    self.Refresh()
+        super(StatusControl, self).__init__(name, icons, icon_paths=[['nao_dashboard', 'icons']])

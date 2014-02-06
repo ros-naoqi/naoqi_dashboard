@@ -1,6 +1,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2014, Aldebaran Robotics (c)
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -67,16 +68,13 @@ class NAODashboard(Dashboard):
         self._console = ConsoleDashWidget(self.context, minimal=False)
 
         ## Joint temperature
-        #self._temp_joint_button = StatusControl(self, wx.ID_ANY, icons_path, "temperature_joints", True)
-        #self._temp_joint_button.SetToolTip(wx.ToolTip("Joint temperatures"))
+        self._temp_joint_button = StatusControl('Joint temperature', 'temperature_joints')
 
         ## CPU temperature
-        #self._temp_head_button = StatusControl(self, wx.ID_ANY, icons_path, "temperature_head", True)
-        #self._temp_head_button.SetToolTip(wx.ToolTip("CPU temperature"))
+        self._temp_head_button = StatusControl('CPU temperature', 'temperature_head')
 
         ## Motors
-        #self._motors_button = StatusControl(self, wx.ID_ANY, icons_path, "motor", True)
-        #self._motors_button.SetToolTip(wx.ToolTip("Stiffness"))
+        #self._motors_button = StatusControl(self.context, "Stiffness", "motor", icons_path, True)
         #self._motors_button._ok = (wx.Bitmap(path.join(icons_path, "stiffness-off-untoggled.png"), wx.BITMAP_TYPE_PNG), 
                     #wx.Bitmap(path.join(icons_path, "stiffness-off-toggled.png"), wx.BITMAP_TYPE_PNG))
         #self._motors_button._warn = (wx.Bitmap(path.join(icons_path, "stiffness-partially-untoggled.png"), wx.BITMAP_TYPE_PNG), 
@@ -89,7 +87,6 @@ class NAODashboard(Dashboard):
 
         ## Battery State
         self._power_state_ctrl = PowerStateControl('NAO Battery')
-        #PowerStateControl(self.context)
 
         self._agg_sub = rospy.Subscriber('diagnostics_agg', DiagnosticArray, self.new_diagnostic_message)
         self.bodyPoseClient = actionlib.SimpleActionClient('body_pose', BodyPoseAction)
@@ -98,7 +95,7 @@ class NAODashboard(Dashboard):
 
     def get_widgets(self):
         return [ [self._robot_combobox], 
-                [self._monitor, self._console, #self._temp_joint_button, self._temp_head_button
+                [self._monitor, self._console, self._temp_joint_button, self._temp_head_button
                  ], #self._motors_button,
                 [self._power_state_ctrl]
                 ]
@@ -173,7 +170,7 @@ class NAODashboard(Dashboard):
                          lowestStiff = float(kv.value)
                      elif kv.key == 'Hot Joints':
                          hotJoints = str(kv.value)
-                #self.set_buttonStatus(self._temp_joint_button, status, "Joints: ", "%s %s"%(highestTemp, hotJoints))
+                self.set_buttonStatus(self._temp_joint_button, status, "Joints: ", "%s %s"%(highestTemp, hotJoints))
                 #if(lowestStiff < 0.0 or highestStiff < 0.0):
                     #self._motors_button.set_stale()
                     #self._motors_button.SetToolTip(wx.ToolTip("Stale"))
@@ -186,8 +183,8 @@ class NAODashboard(Dashboard):
                 #else:
                     #self._motors_button.set_warn()
                     #self._motors_button.SetToolTip(wx.ToolTip("Stiffness partially on (between %f and %f)" % (lowestStiff, highestStiff)))
-            #elif status.name == '/Nao/CPU':
-                #self.set_buttonStatus(self._temp_head_button, status, "CPU temperature: ")
+            elif status.name == '/Nao/CPU':
+                self.set_buttonStatus(self._temp_head_button, status, "CPU temperature: ")
             elif status.name == '/Nao/Battery/Battery':
                 if status.level == 3:
                     self._power_state_ctrl.set_stale()
@@ -197,18 +194,18 @@ class NAODashboard(Dashboard):
     def set_buttonStatus(self, button, status, statusPrefix = "", statusSuffix = ""):
         statusString = "Unknown"
         if status.level == DiagnosticStatus.OK:
-            button.set_ok()
+            button.update_state(0)
             statusString = "OK"
         elif status.level == DiagnosticStatus.WARN:
-            button.set_warn()
+            button.update_state(1)
             statusString = "Warn"
         elif status.level == DiagnosticStatus.ERROR:
-            button.set_error()
+            button.update_state(2)
             statusString = "Error"
         elif status.level == 3:
-            button.set_stale()
+            button.update_state(3)
             statusString = "Stale"
-        button.SetToolTip(wx.ToolTip(statusPrefix + statusString + statusSuffix))
+        button.setToolTip(statusPrefix + statusString + statusSuffix)
 
     def save_settings(self, plugin_settings, instance_settings):
         self._console.save_settings(plugin_settings, instance_settings)
