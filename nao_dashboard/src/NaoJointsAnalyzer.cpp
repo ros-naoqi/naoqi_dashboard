@@ -151,7 +151,7 @@ std::vector<boost::shared_ptr<diagnostic_msgs::DiagnosticStatus> > NaoJointsAnal
 	for(JointsMapType::const_iterator it = m_joints.begin(); it != m_joints.end(); it++) {
 		boost::shared_ptr<diagnostic_msgs::DiagnosticStatus> msg(it->second.status->toStatusMsg(m_path + "/" + m_niceName,
 				(ros::Time::now() - it->second.status->getLastUpdateTime()).toSec() > 3.0));
-		msg->name = m_path + "/" + m_niceName + "/" + removeLeadingNameChaff(it->second.status->getName(), "nao_joint");
+		msg->name = m_path + "/" + m_niceName + "/" + removeLeadingNameChaff(it->second.status->getName(), "nao_joint: ");
 		output.push_back(msg);
 	}
 
