@@ -11,12 +11,6 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
 rosbuild_init()
 
-add_custom_command(
-	COMMAND make 
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/icons 
-	OUTPUT ${PROJECT_SOURCE_DIR}/icons/stamp-built 
-)
-
 #set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
@@ -35,5 +29,5 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-rosbuild_add_library(nao_diagnostic_analyzers src/NaoJointsAnalyzer.cpp icons/stamp-built)
+rosbuild_add_library(nao_diagnostic_analyzers src/NaoJointsAnalyzer.cpp)
 
