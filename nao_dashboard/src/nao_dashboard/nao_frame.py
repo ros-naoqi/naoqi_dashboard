@@ -35,40 +35,10 @@
 #
 
 import roslib
-import dbus, gobject, dbus.glib
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 
 from nao_msgs.msg import BodyPoseAction, BodyPoseGoal
 import actionlib
-import std_srvs.srv
-
-#TODO
-#ID_INIT_POSE = wx.NewId()
-#ID_SIT_DOWN = wx.NewId()
-#ID_REMOVE_STIFFNESS = wx.NewId()
-
-#import avahi
-class avahi:
-    DBUS_NAME = "org.freedesktop.Avahi"
-    DBUS_INTERFACE_SERVER = DBUS_NAME + ".Server"
-    DBUS_PATH_SERVER = "/"
-    DBUS_INTERFACE_ENTRY_GROUP = DBUS_NAME + ".EntryGroup"
-    DBUS_INTERFACE_DOMAIN_BROWSER = DBUS_NAME + ".DomainBrowser"
-    DBUS_INTERFACE_SERVICE_TYPE_BROWSER = DBUS_NAME + ".ServiceTypeBrowser"
-    DBUS_INTERFACE_SERVICE_BROWSER = DBUS_NAME + ".ServiceBrowser"
-    DBUS_INTERFACE_ADDRESS_RESOLVER = DBUS_NAME + ".AddressResolver"
-    DBUS_INTERFACE_HOST_NAME_RESOLVER = DBUS_NAME + ".HostNameResolver"
-    DBUS_INTERFACE_SERVICE_RESOLVER = DBUS_NAME + ".ServiceResolver"
-    DBUS_INTERFACE_RECORD_BROWSER = DBUS_NAME + ".RecordBrowser"    
-    PROTO_UNSPEC, PROTO_INET, PROTO_INET6  = -1, 0, 1
-    IF_UNSPEC = -1
-    LOOKUP_RESULT_CACHED = 1
-    LOOKUP_RESULT_WIDE_AREA = 2
-    LOOKUP_RESULT_MULTICAST = 4
-    LOOKUP_RESULT_LOCAL = 8
-    LOOKUP_RESULT_OUR_OWN = 16
-    LOOKUP_RESULT_STATIC = 32
-
 
 import std_srvs.srv
 
@@ -77,34 +47,18 @@ from rosgraph import rosenv
 
 from .status_control import StatusControl
 from .power_state_control import PowerStateControl
+from .avahi import AvahiWidget
 
 from rqt_robot_dashboard.dashboard import Dashboard
 from rqt_robot_dashboard.monitor_dash_widget import MonitorDashWidget
 from rqt_robot_dashboard.console_dash_widget import ConsoleDashWidget
-
-from python_qt_binding.QtGui import QComboBox
 
 class NAODashboard(Dashboard):
     
     def setup(self, context):
         self.name = 'NAO Dashboard (%s)'%rosenv.get_master_uri()
 
-        self._robot_combobox = QComboBox()
-        self._robot_combobox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        self._robot_combobox.setInsertPolicy(QComboBox.InsertAlphabetically)
-        self._robot_combobox.setEditable(True)
-
-        gobject.threads_init()
-        dbus.glib.threads_init()
-        self.robots = []
-        self.sys_bus = dbus.SystemBus()
-        self.avahi_server = dbus.Interface(self.sys_bus.get_object(avahi.DBUS_NAME, '/'), avahi.DBUS_INTERFACE_SERVER)
-
-        self.sbrowser = dbus.Interface(self.sys_bus.get_object(avahi.DBUS_NAME, self.avahi_server.ServiceBrowserNew(avahi.IF_UNSPEC,
-            avahi.PROTO_INET, '_naoqi._tcp', 'local', dbus.UInt32(0))), avahi.DBUS_INTERFACE_SERVICE_BROWSER)
-
-        self.sbrowser.connect_to_signal("ItemNew", self.avahiNewItem)
-        self.sbrowser.connect_to_signal("ItemRemove", self.avahiItemRemove)
+        self._robot_combobox = AvahiWidget()
 
         # Diagnostics
         self._monitor = MonitorDashWidget(self.context)
@@ -255,45 +209,6 @@ class NAODashboard(Dashboard):
             button.set_stale()
             statusString = "Stale"
         button.SetToolTip(wx.ToolTip(statusPrefix + statusString + statusSuffix))
-
-    def avahiNewItem(self, interface, protocol, name, stype, domain, flags):
-        self.avahi_server.ResolveService(interface, protocol, name, stype, 
-            domain, avahi.PROTO_INET, dbus.UInt32(0), 
-            reply_handler=self.service_resolved, error_handler=self.print_error)
-        pass
-    
-    def avahiItemRemove(self, interface, protocol, name, stype, domain, flags):
-        print "Remove"
-        for robot in self.robots:
-            if robot['name'] == str(name) and robot['address'] == str(address) and robot['port'] == int(port):
-                self.robots.remove(robot)
-        updateRobotCombobox();
-      
-    def service_resolved(self, interface, protocol, name, type, domain, host, aprotocol, address, port, txt, flags):
-        self.robots.append({'name': str(name), 'address': str(address), 'port': int(port)})
-        self.updateRobotCombobox()
-        
-    def updateRobotCombobox(self):
-        selected = self._robot_combobox.currentText()
-        for i in range(self._robot_combobox.count()):
-            self._robot_combobox.removeItem(i)
-        id = -1
-        for robot in self.robots:
-            text = str(robot)
-            text = "%s (%s:%d)" % (robot['name'], robot['address'], robot['port'])
-            self._robot_combobox.addItem(text, '%s:%d' % (robot['address'], robot['port']))
-            if(text == selected):
-                id = self._robot_combobox.count()-1;
-            
-        if(self._robot_combobox.count() == 1):
-            self._robot_combobox.setCurrentIndex(0)
-        elif(id > -1):
-            self._robot_combobox.setCurrentIndex(id)
-
-        
-    def print_error(self, *args):
-        print 'error_handler'
-        print args
 
     def save_settings(self, plugin_settings, instance_settings):
         self._console.save_settings(plugin_settings, instance_settings)
