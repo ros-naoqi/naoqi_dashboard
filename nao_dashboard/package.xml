@@ -28,7 +28,6 @@
   <run_depend>rqt_robot_dashboard</run_depend>
 
   <export> 
-    <diagnostic_aggregator plugin="${prefix}/nao_analyzer_plugins.xml" />
     <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
 
