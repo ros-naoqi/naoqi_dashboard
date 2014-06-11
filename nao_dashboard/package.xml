@@ -1,6 +1,6 @@
 <package>
   <name>nao_dashboard</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>
     nao_dashboard is a GUI for monitoring the state of a Nao robot.
     It is a port of pr2_dashboard and shows status information like
