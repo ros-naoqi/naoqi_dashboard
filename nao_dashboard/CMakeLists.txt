@@ -1,39 +1,15 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8)
+project(nao_dashboard)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin)
 
-rosbuild_init()
-
-add_custom_command(
-	COMMAND make 
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/icons 
-	OUTPUT ${PROJECT_SOURCE_DIR}/icons/stamp-built 
+find_package(catkin REQUIRED diagnostic_aggregator diagnostic_msgs pluginlib)
+catkin_package(DEPENDS 
+               LIBRARIES nao_diagnostic_analyzers
 )
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+catkin_python_setup()
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
-
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
-
-rosbuild_add_library(nao_diagnostic_analyzers src/NaoJointsAnalyzer.cpp icons/stamp-built)
-
+install(DIRECTORY config icons launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(FILES plugin.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(PROGRAMS scripts/nao_dashboard DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

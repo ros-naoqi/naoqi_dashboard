@@ -2,6 +2,7 @@
 # Software License Agreement (BSD License)
 #
 # Copyright (c) 2008, Willow Garage, Inc.
+# Copyright (c) 2014, Aldebaran Robotics
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,21 +36,14 @@ __doc__ = """
 Nao_Dashboard
 GUI for Nao."""
 
+import sys
+
 import roslib
-roslib.load_manifest('nao_dashboard')
 
-WXVER = '2.8'
-import wxversion
-if wxversion.checkInstalled(WXVER):
-  wxversion.select(WXVER)
-else:
-  print >> sys.stderr, "This application requires wxPython version %s"%(WXVER)
-  sys.exit(1)
+pkg = 'nao_dashboard'
+roslib.load_manifest(pkg)
 
-import wx
-import nao_dashboard
+from rqt_gui.main import Main
 
-app = wx.App()
-frame = nao_dashboard.NaoFrame(None)
-frame.Show()
-app.MainLoop()
+main = Main()
+sys.exit(main.main(sys.argv, standalone=pkg))

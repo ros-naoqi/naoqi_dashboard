@@ -1,0 +1,34 @@
+<package>
+  <name>nao_dashboard</name>
+  <version>0.1.0</version>
+  <description>
+    nao_dashboard is a GUI for monitoring the state of a Nao robot.
+    It is a port of pr2_dashboard and shows status information like
+    battery status, joint temperatures, and joint stiffness, as well
+    as integrating ROS tools like rxconsole and robot_monitor.
+  </description>
+  <author>Stefan Osswald</author>
+  <maintainer email="vincent.rabaud@gmail.com">Vincent Rabaud</maintainer>
+  <license>BSD</license>
+
+  <url>http://ros.org/wiki/nao_dashboard</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>diagnostic_aggregator</build_depend>
+  <build_depend>diagnostic_msgs</build_depend>
+  <build_depend>nao_msgs</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>robot_monitor</build_depend>
+
+  <run_depend>diagnostic_aggregator</run_depend>
+  <run_depend>diagnostic_msgs</run_depend>
+  <run_depend>nao_msgs</run_depend>
+  <run_depend>robot_monitor</run_depend>
+  <run_depend>rqt_robot_dashboard</run_depend>
+
+  <export> 
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
+  </export>
+
+</package>
