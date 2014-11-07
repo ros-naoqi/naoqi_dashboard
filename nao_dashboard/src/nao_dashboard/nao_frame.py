@@ -38,7 +38,7 @@
 import roslib
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 
-from nao_msgs.msg import BodyPoseAction, BodyPoseGoal
+from naoqi_msgs.msg import BodyPoseAction, BodyPoseGoal
 import actionlib
 
 import rospy
