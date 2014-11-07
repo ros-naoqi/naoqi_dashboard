@@ -2,8 +2,8 @@
 Changelog for package nao_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2014-11-07)
+------------------
 * switch to using naoqi_msgs and not nao_msgs
 * Contributors: Vincent Rabaud
 
