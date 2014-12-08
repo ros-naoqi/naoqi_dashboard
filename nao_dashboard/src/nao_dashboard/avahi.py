@@ -99,14 +99,19 @@ class AvahiWidget(QComboBox):
     def updateRobotCombobox(self):
         selected = self.currentText()
         for i in range(self.count()):
-            self.removeItem(i)
+            self.removeItem(0)
         id = -1
+        texts = []
         for robot in self.robots:
-            text = "%s (%s:%s)" % (robot.name, robot.address, robot.port)
-            self.addItem(text, '%s:%s' % (robot.address, robot.port))
-            if(text == selected):
+            text = '%s:%s' % (robot.address, robot.port)
+            text_full = "%s (%s)" % (robot.name, text)
+            texts.append((text_full, text))
+        texts = sorted(texts, key=lambda s: s[0].lower())
+        for text in texts:
+            self.addItem(text[0], text[1])
+            if(text[0] == selected):
                 id = self.count()-1;
-            
+
         if(self.count() == 1):
             self.setCurrentIndex(0)
         elif(id > -1):
