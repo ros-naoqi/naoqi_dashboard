@@ -70,7 +70,7 @@ class NAODashboard(Dashboard):
         self._temp_joint_button = StatusControl('Joint temperature', 'temperature_joints')
 
         ## CPU temperature
-        self._temp_head_button = StatusControl('CPU temperature', 'temperature_head')
+        #self._temp_head_button = StatusControl('CPU temperature', 'temperature_head')
 
         ## Motors
         self._motors_button = Motors(self.context)
@@ -82,7 +82,7 @@ class NAODashboard(Dashboard):
 
     def get_widgets(self):
         return [ [self._robot_combobox], 
-                [self._monitor, self._console, self._temp_joint_button, self._temp_head_button,
+                [self._monitor, self._console, self._temp_joint_button, #self._temp_head_button,
                  self._motors_button],
                 [self._power_state_ctrl]
                 ]
@@ -99,7 +99,7 @@ class NAODashboard(Dashboard):
         """
         self._dashboard_message = msg
         for status in msg.status:
-            if status.name == '/Nao/Joints':
+            if status.name == '/Joints':
                 highestTemp = ""
                 lowestStiff = -1.0
                 highestStiff = -1.0
@@ -122,9 +122,9 @@ class NAODashboard(Dashboard):
                     self._motors_button.set_ok()
                 else:
                     self._motors_button.set_warn()
-            elif status.name == '/Nao/CPU':
-                self.set_buttonStatus(self._temp_head_button, status, "CPU temperature: ")
-            elif status.name == '/Nao/Battery/Battery':
+            #elif status.name == '/CPU':
+            #    self.set_buttonStatus(self._temp_head_button, status, "CPU temperature: ")
+            elif status.name == '/Battery/Battery':
                 if status.level == 3:
                     self._power_state_ctrl.set_stale()
                 else:
