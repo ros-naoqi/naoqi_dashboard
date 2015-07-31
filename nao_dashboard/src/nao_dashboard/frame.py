@@ -53,7 +53,7 @@ from rqt_robot_dashboard.dashboard import Dashboard
 from rqt_robot_dashboard.monitor_dash_widget import MonitorDashWidget
 from rqt_robot_dashboard.console_dash_widget import ConsoleDashWidget
 
-class NAODashboard(Dashboard):
+class NAOqiDashboard(Dashboard):
     
     def setup(self, context):
         self.name = 'NAO Dashboard (%s)'%rosenv.get_master_uri()

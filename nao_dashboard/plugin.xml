@@ -1,5 +1,5 @@
 <library path="src">
-  <class name="NAODashboard" type="nao_dashboard.nao_frame.NAODashboard" base_class_type="rqt_gui_py::Plugin">
+  <class name="NAOqiDashboard" type="nao_dashboard.frame.NAOqiDashboard" base_class_type="rqt_gui_py::Plugin">
     <description>
       A Python GUI plugin for displaying a dashboard that displays and interacts with low level NAO states.
     </description>
