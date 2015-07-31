@@ -41,7 +41,7 @@ import rospy
 from rqt_robot_dashboard.widgets import MenuDashWidget
 import std_srvs.srv
 
-from naoqi_msgs.msg import BodyPoseAction, BodyPoseGoal
+from naoqi_bridge_msgs.msg import BodyPoseAction, BodyPoseGoal
 
 
 class Motors(MenuDashWidget):
