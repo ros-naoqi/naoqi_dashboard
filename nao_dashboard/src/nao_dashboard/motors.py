@@ -106,12 +106,3 @@ class Motors(MenuDashWidget):
                      'Robot may fall. Continue to remove stiffness?', QMessageBox.Yes, QMessageBox.No)
       if(reply == QMessageBox.Yes):
           self.stiffnessDisableClient.call()
-
-    def on_halt_motors(self, evt):
-        halt = rospy.ServiceProxy("pr2_etherCAT/halt_motors", std_srvs.srv.Empty)
-        
-        try:
-            halt()
-        except rospy.ServiceException, e:
-            QMessageBox(self, 'Error',
-                     'Failed to halt the motors: service call failed with error: %s'%(e))

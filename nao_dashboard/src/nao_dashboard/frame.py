@@ -56,7 +56,7 @@ from rqt_robot_dashboard.console_dash_widget import ConsoleDashWidget
 class NAOqiDashboard(Dashboard):
     
     def setup(self, context):
-        self.name = 'NAO Dashboard (%s)'%rosenv.get_master_uri()
+        self.name = 'NAOqi Dashboard (%s)'%rosenv.get_master_uri()
 
         self._robot_combobox = AvahiWidget()
 
@@ -70,19 +70,19 @@ class NAOqiDashboard(Dashboard):
         self._temp_joint_button = StatusControl('Joint temperature', 'temperature_joints')
 
         ## CPU temperature
-        #self._temp_head_button = StatusControl('CPU temperature', 'temperature_head')
+        self._temp_head_button = StatusControl('CPU temperature', 'temperature_head')
 
         ## Motors
         self._motors_button = Motors(self.context)
 
         ## Battery State
-        self._power_state_ctrl = PowerStateControl('NAO Battery')
+        self._power_state_ctrl = PowerStateControl('Battery')
 
         self._agg_sub = rospy.Subscriber('diagnostics_agg', DiagnosticArray, self.new_diagnostic_message)
 
     def get_widgets(self):
         return [ [self._robot_combobox], 
-                [self._monitor, self._console, self._temp_joint_button, #self._temp_head_button,
+                [self._monitor, self._console, self._temp_joint_button, self._temp_head_button,
                  self._motors_button],
                 [self._power_state_ctrl]
                 ]
@@ -106,14 +106,15 @@ class NAOqiDashboard(Dashboard):
                 hotJoints = ""
                 for kv in status.values:
                      if kv.key == 'Highest Temperature':
-                         highestTemp = " (" + kv.value + "deg C)"
+                         highestTemp = kv.value
                      elif kv.key == 'Highest Stiffness':
                          highestStiff = float(kv.value)
                      elif kv.key == 'Lowest Stiffness without Hands':
                          lowestStiff = float(kv.value)
                      elif kv.key == 'Hot Joints':
                          hotJoints = str(kv.value)
-                self.set_buttonStatus(self._temp_joint_button, status, "Joints: ", "%s %s"%(highestTemp, hotJoints))
+                self.set_buttonStatus(self._temp_joint_button, status, "Joints ", " (%s deg C  %s)"%(highestTemp, hotJoints))
+                # deal with the stiffness button
                 if(lowestStiff < 0.0 or highestStiff < 0.0):
                     self._motors_button.set_stale()
                 elif(lowestStiff > 0.9):
@@ -122,9 +123,12 @@ class NAOqiDashboard(Dashboard):
                     self._motors_button.set_ok()
                 else:
                     self._motors_button.set_warn()
-            #elif status.name == '/CPU':
-            #    self.set_buttonStatus(self._temp_head_button, status, "CPU temperature: ")
-            elif status.name == '/Battery/Battery':
+                self.set_buttonStatus(self._motors_button, status, "Stiffness ", " (low: %f / high: %f)"%(lowestStiff, highestStiff))
+            elif status.name == '/Computer':
+                for kv in status.values:
+                    if kv.key == "Temperature":
+                        self.set_buttonStatus(self._temp_head_button, status, "CPU temperature ", "(%s C)" % kv.value)
+            elif status.name == '/Power System/Battery':
                 if status.level == 3:
                     self._power_state_ctrl.set_stale()
                 else:

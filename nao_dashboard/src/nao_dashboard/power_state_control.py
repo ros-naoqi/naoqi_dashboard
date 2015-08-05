@@ -51,20 +51,22 @@ class PowerStateControl(BatteryDashWidget):
     def set_power_state(self, msg):
         self.isStale = False
         for kv in msg:
-            if kv.key == "Current":
-                self.update_time(float(kv.value))
-            elif kv.key == "Percentage":
+            if kv.key == "Percentage":
                 if kv.value == "unknown":
                     isStale = True
                     self.set_stale()
                 else:
                     self.update_perc(float(kv.value))
-            elif kv.key == "Discharging flag":
-                self.set_charging(False)
-            elif kv.key == "Charge Flag":
-                self.set_charging(True)
-            elif kv.key == "Full Charge Flag":
-                self.setToolTip("Battery fully charged")
+                    # we should display a time here but
+                    # we don't want to scare the user with a 0
+                    self.update_time(float(kv.value))
+            elif kv.key == "Charging":
+                if kv.value == "True":
+                    self.set_charging(True)
+                else:
+                    self.set_charging(False)
+            elif kv.key == "Message":
+                self.setToolTip(kv.value)
 
     def set_stale(self):
         self.setToolTip("Battery: Stale")
