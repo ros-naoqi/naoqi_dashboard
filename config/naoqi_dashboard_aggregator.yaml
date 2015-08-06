@@ -1,0 +1,53 @@
+# Example analyzer config.
+# Use diagnostic_aggregator/GenericAnalyzer for components you want to monitor,
+# use diagnostic_aggregator/DiscardAnalyzer for components you're not interested in.
+#
+# The naoqi_driver publishes its own diagnostics
+#
+
+analyzers:
+  naoqi:
+    type: diagnostic_aggregator/AnalyzerGroup
+    path: NAOqi
+    analyzers:
+      Computer:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: Computer
+        find_and_remove_prefix: "naoqi_driver_computer:"
+      PowerSystem:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: Power System
+        find_and_remove_prefix: "naoqi_driver_battery:"
+      Joints:
+        type: diagnostic_aggregator/GenericAnalyzer
+        path: Joints
+        find_and_remove_prefix: "naoqi_driver_joints:"
+#      Laser:
+#        type: diagnostic_aggregator/GenericAnalyzer
+#        path: Laser
+#        find_and_remove_prefix: hokuyo
+#      Camera:
+#        type: diagnostic_aggregator/GenericAnalyzer
+#        path: Camera
+#        find_and_remove_prefix: nao_camera
+#      WLAN:
+#        type: diagnostic_aggregator/GenericAnalyzer
+#        path: WLAN
+#        find_and_remove_prefix: nao_wlan
+#      Ethernet:
+#        type: diagnostic_aggregator/GenericAnalyzer
+#        path: Ethernet
+#        find_and_remove_prefix: nao_ethernet
+#      Relays:
+#        type: diagnostic_aggregator/GenericAnalyzer
+#        path: Relays
+#        find_and_remove_prefix: relay_
+  joystick:
+    type: diagnostic_aggregator/GenericAnalyzer
+    path: Joystick
+    discard_stale: true
+    find_and_remove_prefix: joy_node
+  tf:
+    type: diagnostic_aggregator/GenericAnalyzer
+    path: TF
+    find_and_remove_prefix: "tf_monitor:"

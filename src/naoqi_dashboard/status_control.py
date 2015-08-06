@@ -47,4 +47,4 @@ class StatusControl(IconToolButton):
 
         icons = [ok_icon, warn_icon, err_icon, stale_icon]
 
-        super(StatusControl, self).__init__(name, icons, icon_paths=[['nao_dashboard', 'icons']])
+        super(StatusControl, self).__init__(name, icons, icon_paths=[['naoqi_dashboard', 'icons']])

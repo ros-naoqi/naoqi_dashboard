@@ -33,15 +33,12 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 __doc__ = """
-Nao_Dashboard
-GUI for Nao."""
+NAOqi_Dashboard
+GUI for NAOqi robots."""
 
 import sys
 
-import roslib
-
-pkg = 'nao_dashboard'
-roslib.load_manifest(pkg)
+pkg = 'naoqi_dashboard'
 
 from rqt_gui.main import Main
 

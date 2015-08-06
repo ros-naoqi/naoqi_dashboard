@@ -1,27 +1,22 @@
 <package>
-  <name>nao_dashboard</name>
+  <name>naoqi_dashboard</name>
   <version>0.1.2</version>
   <description>
-    nao_dashboard is a GUI for monitoring the state of a Nao robot.
+    naoqi_dashboard is a GUI for monitoring the state of an ALdebaran robot.
     It is a port of pr2_dashboard and shows status information like
     battery status, joint temperatures, and joint stiffness, as well
-    as integrating ROS tools like rxconsole and robot_monitor.
+    as integrating ROS tools like rqt_console and rqt_robot_monitor.
   </description>
   <author>Stefan Osswald</author>
   <maintainer email="vincent.rabaud@gmail.com">Vincent Rabaud</maintainer>
   <license>BSD</license>
 
-  <url>http://ros.org/wiki/nao_dashboard</url>
+  <url>http://ros.org/wiki/naoqi_dashboard</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>diagnostic_aggregator</build_depend>
-  <build_depend>diagnostic_msgs</build_depend>
-  <build_depend>naoqi_bridge_msgs</build_depend>
-  <build_depend>pluginlib</build_depend>
-  <build_depend>rqt_robot_monitor</build_depend>
-
   <run_depend>diagnostic_aggregator</run_depend>
+  <run_depend>diagnostic_common_diagnostics</run_depend>
   <run_depend>diagnostic_msgs</run_depend>
   <run_depend>naoqi_bridge_msgs</run_depend>
   <run_depend>rqt_robot_dashboard</run_depend>
@@ -29,6 +24,6 @@
 
   <export> 
     <rqt_gui plugin="${prefix}/plugin.xml"/>
+    <architecture_independent/>
   </export>
-
 </package>

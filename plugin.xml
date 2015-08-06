@@ -1,7 +1,7 @@
 <library path="src">
-  <class name="NAOqiDashboard" type="nao_dashboard.frame.NAOqiDashboard" base_class_type="rqt_gui_py::Plugin">
+  <class name="NAOqiDashboard" type="naoqi_dashboard.frame.NAOqiDashboard" base_class_type="rqt_gui_py::Plugin">
     <description>
-      A Python GUI plugin for displaying a dashboard that displays and interacts with low level NAO states.
+      A Python GUI plugin for displaying a dashboard that displays and interacts with low level NAOqi states.
     </description>
     <qtgui>
       <group>
@@ -10,13 +10,13 @@
         <statustip>Plugins related to specific robots.</statustip>
       </group>
       <group>
-        <label>NAO</label>
+        <label>NAOqi</label>
         <icon type="theme">folder</icon>
-        <statustip>Plugins related to the NAO robot.</statustip>
+        <statustip>Plugins related to the NAOqi robot.</statustip>
       </group>
-      <label>NAO Dashboard</label>
+      <label>NAOqi Dashboard</label>
       <icon type="theme">task-past-due</icon>
-      <statustip>A Python GUI plugin for displaying a dashboard that displays and interacts with low level NAO states.</statustip>
+      <statustip>A Python GUI plugin for displaying a dashboard that displays and interacts with low level NAOqi states.</statustip>
     </qtgui>
   </class>
 </library>
