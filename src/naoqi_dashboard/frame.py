@@ -98,8 +98,16 @@ class NAOqiDashboard(Dashboard):
         :type msg: pr2_msgs.msg.DashboardState
         """
         self._dashboard_message = msg
+        highest_level = DiagnosticStatus.OK
+        highest_message = 'All OK'
         for status in msg.status:
-            if status.name == '/Joints':
+            for black in ['/Joystick']:
+                if status.name.startswith(black):
+                    continue
+                if status.level > highest_level:
+                    highest_level = status.level
+                    highest_message = status.message
+            if status.name == '/NAOqi/Joints/Status':
                 highestTemp = ""
                 lowestStiff = -1.0
                 highestStiff = -1.0
@@ -124,15 +132,23 @@ class NAOqiDashboard(Dashboard):
                 else:
                     self._motors_button.set_warn()
                 self.set_buttonStatus(self._motors_button, status, "Stiffness ", " (low: %f / high: %f)"%(lowestStiff, highestStiff))
-            elif status.name == '/Computer':
+            elif status.name == '/NAOqi/Computer/CPU':
                 for kv in status.values:
                     if kv.key == "Temperature":
                         self.set_buttonStatus(self._temp_head_button, status, "CPU temperature ", "(%s C)" % kv.value)
-            elif status.name == '/Power System/Battery':
+            elif status.name == '/NAOqi/Power System/Status':
                 if status.level == 3:
                     self._power_state_ctrl.set_stale()
                 else:
                     self._power_state_ctrl.set_power_state(status.values)
+        # Override the status of the Monitor as we can blacklist some diagnostic that is not there (and therefore STALE
+        if len(msg.status):
+            class Status(object):
+                pass
+
+            status = Status()
+            status.level = highest_level
+            self.set_buttonStatus(self._monitor, status, '', ' %s' % highest_message)
 
     def set_buttonStatus(self, button, status, statusPrefix = "", statusSuffix = ""):
         statusString = "Unknown"
