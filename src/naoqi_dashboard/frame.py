@@ -54,7 +54,7 @@ from rqt_robot_dashboard.monitor_dash_widget import MonitorDashWidget
 from rqt_robot_dashboard.console_dash_widget import ConsoleDashWidget
 
 class NAOqiDashboard(Dashboard):
-    
+
     def setup(self, context):
         self.name = 'NAOqi Dashboard (%s)'%rosenv.get_master_uri()
 
@@ -78,7 +78,7 @@ class NAOqiDashboard(Dashboard):
         ## Battery State
         self._power_state_ctrl = PowerStateControl('Battery')
 
-        self._agg_sub = rospy.Subscriber('diagnostics_agg', DiagnosticArray, self.new_diagnostic_message)
+        self._agg_sub = rospy.Subscriber('/diagnostics_agg', DiagnosticArray, self.new_diagnostic_message)
 
     def get_widgets(self):
         return [ [self._robot_combobox], 
