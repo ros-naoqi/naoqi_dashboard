@@ -67,14 +67,21 @@ class Motors(MenuDashWidget):
         super(Motors, self).__init__('Motors', icons)
         self.update_state(3)
 
-        self.add_action('Init pose', self.on_init_pose)
+        self.add_action('Wakeup', self.on_wakeup)
+        self.add_action('Rest', self.on_rest)
+        self.add_action('Enable Life', self.on_enable_life)
+        self.add_action('Disable Life', self.on_disable_life)
         self.add_action('Sit down && remove stiffness', self.on_sit_down)
         self.add_action('Remove stiffness immediately', self.on_remove_stiffness)
 
         # clients for controlling the robot
         self.bodyPoseClient = actionlib.SimpleActionClient('body_pose', BodyPoseAction)
-        self.stiffnessEnableClient = rospy.ServiceProxy("body_stiffness/enable", std_srvs.srv.Empty)
-        self.stiffnessDisableClient = rospy.ServiceProxy("body_stiffness/disable", std_srvs.srv.Empty)
+        self.stiffnessEnableClient = rospy.ServiceProxy("pose/body_stiffness/enable", std_srvs.srv.Empty)
+        self.stiffnessDisableClient = rospy.ServiceProxy("pose/body_stiffness/disable", std_srvs.srv.Empty)
+        self.wakeupClient = rospy.ServiceProxy("pose/wakeup", std_srvs.srv.Empty)
+        self.restClient = rospy.ServiceProxy("pose/rest", std_srvs.srv.Empty)
+        self.lifeEnableClient = rospy.ServiceProxy("pose/life/enable", std_srvs.srv.Empty)
+        self.lifeDisableClient = rospy.ServiceProxy("pose/life/disable", std_srvs.srv.Empty)
 
     def set_ok(self):
         self.update_state(0)
@@ -87,11 +94,19 @@ class Motors(MenuDashWidget):
 
     def set_stale(self):
         self.update_state(3)
-      
-    def on_init_pose(self):
-        self.stiffnessEnableClient.call()
-        self.bodyPoseClient.send_goal_and_wait(BodyPoseGoal(pose_name = 'init'))
-  
+
+    def on_wakeup(self):
+        self.wakeupClient.call()
+
+    def on_rest(self):
+        self.restClient.call()
+
+    def on_enable_life(self):
+        self.lifeEnableClient.call()
+
+    def on_disable_life(self):
+        self.lifeDisableClient.call()
+
     def on_sit_down(self):
         self.bodyPoseClient.send_goal_and_wait(BodyPoseGoal(pose_name = 'crouch'))
         state = self.bodyPoseClient.get_state()
@@ -102,7 +117,7 @@ class Motors(MenuDashWidget):
             rospy.logerror("crouch pose did not succeed: %s", self.bodyPoseClient.get_goal_status_text())
 
     def on_remove_stiffness(self):
-      reply = QMessageBox.question(self, 'Caution', 
+      reply = QMessageBox.question(self, 'Caution',
                      'Robot may fall. Continue to remove stiffness?', QMessageBox.Yes, QMessageBox.No)
       if(reply == QMessageBox.Yes):
           self.stiffnessDisableClient.call()
