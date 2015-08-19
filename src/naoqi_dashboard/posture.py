@@ -34,7 +34,7 @@
 import actionlib
 import rospy
 
-from python_qt_binding.QtGui import QComboBox
+from python_qt_binding.QtGui import QComboBox, QMessageBox
 from naoqi_bridge_msgs.msg import BodyPoseWithSpeedAction, BodyPoseWithSpeedGoal
 
 class PostureWidget(QComboBox):
