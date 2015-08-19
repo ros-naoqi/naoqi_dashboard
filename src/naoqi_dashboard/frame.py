@@ -48,10 +48,13 @@ from .status_control import StatusControl
 from .power_state_control import PowerStateControl
 from .motors import Motors
 from .avahi import AvahiWidget
+from .posture import PostureWidget
 
 from rqt_robot_dashboard.dashboard import Dashboard
 from rqt_robot_dashboard.monitor_dash_widget import MonitorDashWidget
 from rqt_robot_dashboard.console_dash_widget import ConsoleDashWidget
+
+from PyQt4 import QtGui, QtCore
 
 class NAOqiDashboard(Dashboard):
 
@@ -75,6 +78,23 @@ class NAOqiDashboard(Dashboard):
         ## Motors
         self._motors_button = Motors(self.context)
 
+        ## Postures
+        self._postures = PostureWidget()
+
+        ## combobox for posture
+        self.posture_combobox = QtGui.QComboBox()
+        self.posture_combobox.addItem("Crouch")
+        self.posture_combobox.addItem("Stand")
+        self.posture_combobox.addItem("Stand Init")
+        self.posture_combobox.addItem("Stand Zero")
+        self.posture_combobox.addItem("Lying Back")
+        self.posture_combobox.addItem("Lying Belly")
+        self.posture_combobox.addItem("Sit")
+        self.posture_combobox.addItem("Sit on chair")
+        self.posture_combobox.addItem("Sit relax")
+        self.posture_button = QtGui.QPushButton("Go!")
+        self.posture_button.clicked.connect(self.handle_posture)
+
         ## Battery State
         self._power_state_ctrl = PowerStateControl('Battery')
 
@@ -84,8 +104,15 @@ class NAOqiDashboard(Dashboard):
         return [ [self._robot_combobox], 
                 [self._monitor, self._console, self._temp_joint_button, self._temp_head_button,
                  self._motors_button],
-                [self._power_state_ctrl]
+                [self._power_state_ctrl],
+                #[self.posture_combobox, self.posture_button]
+                [QtGui.QLabel("Posture"), self._postures]
                 ]
+
+
+    def handle_posture(self):
+        print "handle posture"
+
 
     def shutdown_dashboard(self):
         self._agg_sub.unregister()
