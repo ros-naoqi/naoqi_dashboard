@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="namespace"   default="" />
+  <arg name="namespace"   default="/" />
 
   <node pkg="naoqi_dashboard" type="naoqi_dashboard" name="naoqi_dashboard" ns="$(arg namespace)" output="screen" />
   <node pkg="diagnostic_common_diagnostics" type="tf_monitor.py" name="tf_monitor"/>
