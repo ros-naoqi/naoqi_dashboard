@@ -38,7 +38,8 @@
 import roslib
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 
-from naoqi_bridge_msgs.msg import BodyPoseAction, BodyPoseGoal
+from naoqi_bridge_msgs.srv import GetRobotInfo, GetRobotInfoRequest, GetRobotInfoResponse
+from naoqi_bridge_msgs.msg import BodyPoseAction, BodyPoseGoal, RobotInfo
 import actionlib
 
 import rospy
@@ -61,6 +62,23 @@ class NAOqiDashboard(Dashboard):
     def setup(self, context):
         self.name = 'NAOqi Dashboard (%s)'%rosenv.get_master_uri()
 
+        self.robot_prefix = ''
+
+        # get robot info
+        rospy.wait_for_service("/naoqi_driver/get_robot_config")
+        try:
+            get_robot_info = rospy.ServiceProxy("/naoqi_driver/get_robot_config", GetRobotInfo)
+            resp = get_robot_info.call( GetRobotInfoRequest() )
+            if resp.info.type == 0:
+                self.robot_prefix = "nao_robot"
+            elif resp.info.type == 2:
+                self.robot_prefix = "pepper_robot"
+        except rospy.ServiceException, e:
+            print "Unable to call naoqi_driver/get_robot_config:%s", e
+
+        #print "gonna work with robot prefix ", self.robot_prefix
+
+
         self._robot_combobox = AvahiWidget()
 
         # Diagnostics
@@ -76,24 +94,10 @@ class NAOqiDashboard(Dashboard):
         self._temp_head_button = StatusControl('CPU temperature', 'temperature_head')
 
         ## Motors
-        self._motors_button = Motors(self.context)
+        self._motors_button = Motors(self.context, self.robot_prefix)
 
         ## Postures
-        self._postures = PostureWidget()
-
-        ## combobox for posture
-        self.posture_combobox = QtGui.QComboBox()
-        self.posture_combobox.addItem("Crouch")
-        self.posture_combobox.addItem("Stand")
-        self.posture_combobox.addItem("Stand Init")
-        self.posture_combobox.addItem("Stand Zero")
-        self.posture_combobox.addItem("Lying Back")
-        self.posture_combobox.addItem("Lying Belly")
-        self.posture_combobox.addItem("Sit")
-        self.posture_combobox.addItem("Sit on chair")
-        self.posture_combobox.addItem("Sit relax")
-        self.posture_button = QtGui.QPushButton("Go!")
-        self.posture_button.clicked.connect(self.handle_posture)
+        self._postures = PostureWidget(self.robot_prefix)
 
         ## Battery State
         self._power_state_ctrl = PowerStateControl('Battery')
@@ -101,17 +105,13 @@ class NAOqiDashboard(Dashboard):
         self._agg_sub = rospy.Subscriber('/diagnostics_agg', DiagnosticArray, self.new_diagnostic_message)
 
     def get_widgets(self):
-        return [ [self._robot_combobox], 
+        return [ [self._robot_combobox],
                 [self._monitor, self._console, self._temp_joint_button, self._temp_head_button,
                  self._motors_button],
                 [self._power_state_ctrl],
                 #[self.posture_combobox, self.posture_button]
                 [QtGui.QLabel("Posture"), self._postures]
                 ]
-
-
-    def handle_posture(self):
-        print "handle posture"
 
 
     def shutdown_dashboard(self):

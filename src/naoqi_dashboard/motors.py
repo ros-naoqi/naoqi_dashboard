@@ -48,7 +48,7 @@ class Motors(MenuDashWidget):
     """
     Dashboard widget to display motor state and allow interaction.
     """
-    def __init__(self, context):
+    def __init__(self, context, topic_prefix):
         """
         :param context: the plugin context
         :type context: qt_gui.plugin.Plugin
@@ -74,12 +74,12 @@ class Motors(MenuDashWidget):
         self.add_action('Remove stiffness immediately', self.on_remove_stiffness)
 
         # clients for controlling the robot
-        self.stiffnessEnableClient = rospy.ServiceProxy("pose/body_stiffness/enable", std_srvs.srv.Empty)
-        self.stiffnessDisableClient = rospy.ServiceProxy("pose/body_stiffness/disable", std_srvs.srv.Empty)
-        self.wakeupClient = rospy.ServiceProxy("pose/wakeup", std_srvs.srv.Empty)
-        self.restClient = rospy.ServiceProxy("pose/rest", std_srvs.srv.Empty)
-        self.lifeEnableClient = rospy.ServiceProxy("pose/life/enable", std_srvs.srv.Empty)
-        self.lifeDisableClient = rospy.ServiceProxy("pose/life/disable", std_srvs.srv.Empty)
+        self.stiffnessEnableClient = rospy.ServiceProxy(str(topic_prefix)+"/pose/body_stiffness/enable", std_srvs.srv.Empty)
+        self.stiffnessDisableClient = rospy.ServiceProxy(str(topic_prefix)+"/pose/body_stiffness/disable", std_srvs.srv.Empty)
+        self.wakeupClient = rospy.ServiceProxy(str(topic_prefix)+"/pose/wakeup", std_srvs.srv.Empty)
+        self.restClient = rospy.ServiceProxy(str(topic_prefix)+"/pose/rest", std_srvs.srv.Empty)
+        self.lifeEnableClient = rospy.ServiceProxy(str(topic_prefix)+"/pose/life/enable", std_srvs.srv.Empty)
+        self.lifeDisableClient = rospy.ServiceProxy(str(topic_prefix)+"/pose/life/disable", std_srvs.srv.Empty)
 
     def set_ok(self):
         self.update_state(0)

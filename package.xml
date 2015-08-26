@@ -18,7 +18,7 @@
   <run_depend>diagnostic_aggregator</run_depend>
   <run_depend>diagnostic_common_diagnostics</run_depend>
   <run_depend>diagnostic_msgs</run_depend>
-  <run_depend>naoqi_bridge_msgs</run_depend>
+  <run_depend version_gte="0.0.4">naoqi_bridge_msgs</run_depend>
   <run_depend>rqt_robot_dashboard</run_depend>
   <run_depend>rqt_robot_monitor</run_depend>
 

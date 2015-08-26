@@ -38,17 +38,21 @@ from python_qt_binding.QtGui import QComboBox, QMessageBox
 from naoqi_bridge_msgs.msg import BodyPoseWithSpeedAction, BodyPoseWithSpeedGoal
 
 class PostureWidget(QComboBox):
-    def __init__(self):
+    def __init__(self, topic_prefix):
         super(PostureWidget, self).__init__()
         self.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         self.setInsertPolicy(QComboBox.InsertAlphabetically)
         self.setEditable(True)
 
-        posture_list = ["---", "Crouch", "LyingBack", "LyingBelly", "Sit", "SitOnChair", "SitRelax", "Stand", "StandInit", "StandZero"]
+        if topic_prefix == "nao_robot":
+            posture_list = ["---", "Crouch", "LyingBack", "LyingBelly", "Sit", "SitOnChair", "SitRelax", "Stand", "StandInit", "StandZero"]
+        elif topic_prefix == "pepper_robot":
+            posture_list = [ "---", "Crouch", "Stand", "StandInit", "StandZero" ]
+
         self.addItems( posture_list )
         self.currentIndexChanged.connect( self.apply_posture )
 
-        self.bodyPoseClient = actionlib.SimpleActionClient('pose/body_pose_naoqi', BodyPoseWithSpeedAction)
+        self.bodyPoseClient = actionlib.SimpleActionClient(str(topic_prefix)+'/pose/body_pose_naoqi', BodyPoseWithSpeedAction)
 
     def apply_posture(self):
         posture = self.currentText()
