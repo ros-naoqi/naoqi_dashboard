@@ -1,6 +1,6 @@
 <package>
   <name>naoqi_dashboard</name>
-  <version>0.1.2</version>
+  <version>0.1.3</version>
   <description>
     naoqi_dashboard is a GUI for monitoring the state of an ALdebaran robot.
     It is a port of pr2_dashboard and shows status information like

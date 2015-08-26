@@ -2,8 +2,8 @@
 Changelog for package nao_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.3 (2015-08-26)
+------------------
 * resolve ns deb
 * add conflicts with the previous naming conventions
 * fix bad import
