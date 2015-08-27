@@ -3,7 +3,6 @@ project(naoqi_dashboard)
 
 find_package(catkin)
 
-find_package(catkin REQUIRED diagnostic_aggregator diagnostic_msgs pluginlib)
 catkin_package()
 
 catkin_python_setup()
