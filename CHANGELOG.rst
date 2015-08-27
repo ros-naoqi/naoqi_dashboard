@@ -2,6 +2,11 @@
 Changelog for package nao_dashboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* remove find_package components
+* Contributors: Karsten Knese
+
 0.1.3 (2015-08-26)
 ------------------
 * resolve ns deb
