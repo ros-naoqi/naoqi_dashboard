@@ -48,6 +48,8 @@ class PostureWidget(QComboBox):
             posture_list = ["---", "Crouch", "LyingBack", "LyingBelly", "Sit", "SitOnChair", "SitRelax", "Stand", "StandInit", "StandZero"]
         elif topic_prefix == "pepper_robot":
             posture_list = [ "---", "Crouch", "Stand", "StandInit", "StandZero" ]
+        else:
+            posture_list = []
 
         self.addItems( posture_list )
         self.currentIndexChanged.connect( self.apply_posture )
