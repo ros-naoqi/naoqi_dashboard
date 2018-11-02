@@ -34,7 +34,12 @@
 import actionlib
 import rospy
 
-from python_qt_binding.QtGui import QComboBox, QMessageBox
+from distutils.version import LooseVersion
+import python_qt_binding
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
+    from python_qt_binding.QtWidgets import QComboBox, QMessageBox
+else:
+    from python_qt_binding.QtGui import QComboBox, QMessageBox
 from naoqi_bridge_msgs.msg import BodyPoseWithSpeedAction, BodyPoseWithSpeedGoal
 
 class PostureWidget(QComboBox):

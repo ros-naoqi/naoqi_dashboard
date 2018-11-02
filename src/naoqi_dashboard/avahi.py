@@ -33,7 +33,12 @@
 
 import dbus, gobject, dbus.glib
 
-from python_qt_binding.QtGui import QComboBox
+from distutils.version import LooseVersion
+import python_qt_binding
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
+    from python_qt_binding.QtWidgets import QComboBox
+else:
+    from python_qt_binding.QtGui import QComboBox
 
 import collections
 
