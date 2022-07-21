@@ -55,7 +55,12 @@ from rqt_robot_dashboard.dashboard import Dashboard
 from rqt_robot_dashboard.monitor_dash_widget import MonitorDashWidget
 from rqt_robot_dashboard.console_dash_widget import ConsoleDashWidget
 
-from PyQt4 import QtGui, QtCore
+from distutils.version import LooseVersion
+import python_qt_binding
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
+    from python_qt_binding.QtWidgets import QLabel
+else:
+    from PyQt4.QtGui import QLabel
 
 class NAOqiDashboard(Dashboard):
 
@@ -110,7 +115,7 @@ class NAOqiDashboard(Dashboard):
                  self._motors_button],
                 [self._power_state_ctrl],
                 #[self.posture_combobox, self.posture_button]
-                [QtGui.QLabel("Posture"), self._postures]
+                [QLabel("Posture"), self._postures]
                 ]
 
 

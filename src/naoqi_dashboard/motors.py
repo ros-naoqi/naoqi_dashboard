@@ -34,7 +34,12 @@
 # Ported from pr2_motors: Vincent Rabaud, Aldebaran Robotics, 2014
 #
 
-from python_qt_binding.QtGui import QMessageBox
+from distutils.version import LooseVersion
+import python_qt_binding
+if LooseVersion(python_qt_binding.QT_BINDING_VERSION).version[0] >= 5:
+    from python_qt_binding.QtWidgets import QMessageBox
+else:
+    from python_qt_binding.QtGui import QMessageBox
 
 import actionlib
 import rospy
