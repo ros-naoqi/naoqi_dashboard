@@ -31,7 +31,8 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import dbus, gobject, dbus.glib
+import dbus, dbus.glib
+from gi.repository import GObject as gobject
 
 from distutils.version import LooseVersion
 import python_qt_binding
